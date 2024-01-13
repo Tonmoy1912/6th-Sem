@@ -2,10 +2,6 @@ import socket
 import sys
 
 
-
-
-
-
 # received_message = client_socket.recv(1024).decode()
 
 # print(received_message)
@@ -15,7 +11,7 @@ import sys
 # client_socket.close()
 
 print("Command line args")
-# print(sys.argv)
+print(sys.argv)
 in_put=sys.argv
 
 

@@ -4,7 +4,7 @@ server_socket = socket.socket()
 print("Socket Created")
 
 server_socket.bind(("localhost", 8000))
-server_socket.listen(1)
+server_socket.listen(10)
 
 print("Waiting for connections....")
 
