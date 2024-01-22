@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Repo</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <h1 id="title">Data Repository System</h1>
+    <nav >
+        <ul type="none" id="nav-bar">
+            <li> <a href="/file-upload-page">Upload File</a> </li>
+            <li> <a href="/text-upload-page"> Upload Text</a> </li>
+            <li> <a href="/file-show-page">Show File</a> </li>
+            <li> <a href="/text-show-page">Show Text</a> </li>
+            <%if(signin){%>
+            <li> <a href="/logout">Log out</a></li>
+            <%}%>
+        </ul>
+    </nav>
+    <%- body %>
+</body>
+</html>
