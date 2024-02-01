@@ -77,6 +77,24 @@ class Solution{
         }
         return ans;
     }
+
+    void ids(int n,vector<pair<int,int>> &edges,int source,int destination,int depth){
+        for(int i=0;i<=depth;i++){
+            vector<int> path=dls_path(n,edges,source,destination,i);
+            if(path.empty()){
+                cout<<"Destination not found for depth: "<<i<<endl;
+            }
+            else{
+                cout<<"\nDestination found for depth: "<<i<<endl;
+                cout<<"path:"<<endl;
+                for(auto it:path){
+                    cout<<it<<" ";
+                }
+                cout<<endl;
+                break;
+            }
+        }
+    }
 };
 
 int main(){
@@ -95,19 +113,19 @@ int main(){
     }
     Solution s;
     int source,destination,depth;
-    //Enter source, destination, depth
     cin>>source>>destination>>depth;
-    vector<int> path=s.dls_path(n,edges,source,destination,depth);
-    if(path.empty()){
-        cout<<"Destination not found in the given depth";
-    }
-    else{
-        cout<<"Destination found"<<endl;
-        cout<<"DLS path:"<<endl;
-        for(auto it:path){
-            cout<<it<<" ";
-        }
-        cout<<endl;
-    }
+    s.ids(n,edges,source,destination,depth);
+    // vector<int> path=s.dls_path(n,edges,source,destination,depth);
+    // if(path.empty()){
+    //     cout<<"Destination not found in the given depth";
+    // }
+    // else{
+    //     cout<<"Destination found"<<endl;
+    //     cout<<"DLS path:"<<endl;
+    //     for(auto it:path){
+    //         cout<<it<<" ";
+    //     }
+    //     cout<<endl;
+    // }
     return 0;
 }
