@@ -1,6 +1,20 @@
 <h1 class="page-heading">Image Display Page</h1>
 <div class="display-container">
-    <% for(let url of images){  %>
-        <img src="<%= url %>" alt="" width="300px" class="display-item-image">
-    <% } %>
+    <% for(let url of images){ let arr=url.split("/");
+     let file_name=arr[arr.length-1];
+     let file_extension=file_name.split(".")[1];
+     %>
+        <div class="file-container">
+            <% if(file_extension!="pdf") { %>
+            <img src="<%= url %>" alt="" width="300px" height="300px" class="display-item-image">
+            <% } 
+             else { %>
+                <embed src="<%= url %>" type="application/pdf"  alt="" width="300px" height="300px"  class="display-item-image">
+            <% } %>
+            <br>
+            <a href="<%= url %>" download="<%= url %>">
+                <%=file_name.split(".")[0]%>
+            </a>
+        </div>
+        <% } %>
 </div>
