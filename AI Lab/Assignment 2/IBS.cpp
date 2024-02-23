@@ -39,7 +39,7 @@ class Solution{
     }
     public:
     //Assuming 0 is default root of the graph
-    void ibs(int n,vector<pair<int,int>> &edges,int destination,int b){
+    void ibs(int n,vector<pair<int,int>> &edges,int source,int destination,int b){
         //creating adjacency list
         vector<vector<int>> adj(n);
         for(auto &it:edges){
@@ -50,7 +50,7 @@ class Solution{
         vector<int> ans;
         //Assuming 0 is default root of the graph
         int cur_b=1;
-        helper_dfs(adj,0,-1,vis,ans,cur_b,destination,b);
+        helper_dfs(adj,source,-1,vis,ans,cur_b,destination,b);
         // return ans;
     }
 };
@@ -69,14 +69,14 @@ int main(){
         cin>>x>>y;
         edges.push_back({x,y});
     }
-    int destination,b;
+    int source,destination,b;
     // cout<<"Enter the destination"<<endl;
-    cin>>destination;
+    cin>>source>>destination;
     // cout<<"Enter the depth"<<endl;
     cin>>b;
     Solution s;
     // vector<int> dfs=s.dfs(n,edges);
-    s.ibs(n,edges,destination,b);
+    s.ibs(n,edges,source,destination,b);
     // cout<<"Nodes visited in dfs traversal"<<endl;
     // for(auto it:dfs){
     //     cout<<it<<" ";

@@ -29,6 +29,10 @@ bool check(string &a, string &b, string &c, unordered_map<char, int> &m)
     return sum == cnum;
 }
 
+void assignNo(){
+    
+}
+
 int main()
 {
     string a, b, c;
