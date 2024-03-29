@@ -1,0 +1,39 @@
+1/
+create table department_1133_3(
+    dept_code int primary key,
+    dept_name varchar(25)
+);
+
+create table emp_1133_3(
+    emp_code int primary key,
+    dept_code int not null,
+    name varchar(30),
+    address varchar(50),
+    city varchar(30),
+    basic int not null,
+    join_date date default sysdate,
+    constraint basic_const check ( basic>=5000 and basic<=9000 ),
+    foreign key (dept_code) references department_1133_3(dept_code)
+);
+
+create table leave_1133_3(
+    leave_id int primary key,
+    leave_type char(2) not null,
+    emp_code int not null,
+    from_date date not null,
+    to_date date not null,
+    foreign key (emp_code) references emp_1133_3(emp_code) on delete cascade
+);
+
+2/
+insert into department_1133_3 values ('1','PERSONNEL');
+insert into department_1133_3 values ('2','PRODUCTION');
+insert into department_1133_3 values ('3','PURCHASE');
+insert into emp_1133_3 (emp_code,dept_code,name,address,city,basic) values ('1','1','TONMOY BISWAS','ADDRESS 1 2 3 ','kolkata','7000');
+insert into emp_1133_3 (emp_code,dept_code,name,address,city,basic) values ('2','2','Tuhin','ADDRESS 1 2 3 ','kolkata','6000');
+insert into emp_1133_3 (emp_code,dept_code,name,address,city,basic) values ('3','3','PROTYAY','ADDRESS 1 2 3 ','kolkata','7000');
+delete from department_1133_3 where dept_code=2;
+
+3/
+select emp_code, name, dept_code, basic into new_emp_1133_3 from emp_1133_3  where basic='7000';
+

@@ -12,7 +12,10 @@ class Astar{
     int n;
 
     int g(int next,int cur){
-        return adj[cur][next]+dis[cur];
+        int ans= adj[cur][next]+dis[cur];
+        if(ans<dis[next]){
+            dis[next]=ans;
+        }
     }
 
     int h(int next){

@@ -12,7 +12,10 @@ class Astar{
     int n;
 
     int g(int next,int cur){
-        return adj[cur][next]+dis[cur];
+        int ans= adj[cur][next]+dis[cur];
+        if(ans<dis[next]){
+            dis[next]=ans;
+        }
     }
 
     int h(int next){
@@ -23,7 +26,7 @@ class Astar{
     }
 
     int fn(int cur,int next){
-        return g(next,cur)+h(next);
+        return h(next);
     }
     public:
 
@@ -52,7 +55,7 @@ class Astar{
             for(auto it:adj[node]){
                 int next=it.first;
                 //assuming all step cost is 1 hence the heuristic is consistent. hence graph search strategy will work
-                if(!vis[next]){
+                if(!vis[next]&&parent[node]!=next){
                     int fval=fn(node,next);
                     pq.push({fval,next});
                     parent[next]=node;

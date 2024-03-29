@@ -1,0 +1,146 @@
+CREATE TABLE Department (
+    DeptCode INT PRIMARY KEY,
+    DeptName VARCHAR(50) UNIQUE
+);
+
+CREATE TABLE Employee (
+    EmpCode INT PRIMARY KEY,
+    EmpName VARCHAR(50) CONSTRAINT UPPERCASE_EmpName CHECK (EmpName = UPPER(EmpName)),
+    DeptCode INT,
+    BasicSalary DECIMAL(10,2) CHECK (BasicSalary BETWEEN 5000 AND 9000),
+    JoiningDate DATE DEFAULT CURRENT_DATE,
+    CONSTRAINT FK_DeptCode FOREIGN KEY (DeptCode) REFERENCES Department(DeptCode) ON DELETE RESTRICT
+);
+
+CREATE TABLE LeaveRegister (
+    LeaveID INT PRIMARY KEY,
+    EmpCode INT,
+    LeaveType VARCHAR(2),
+    FromDate DATE,
+    ToDate DATE,
+    CONSTRAINT FK_EmpCode FOREIGN KEY (EmpCode) REFERENCES Employee(EmpCode) ON DELETE CASCADE
+);
+
+
+-- Trying to insert an employee with a basic salary below Rs. 5000
+INSERT INTO Employee (EmpCode, EmpName, DeptCode, BasicSalary) VALUES (1, 'John Doe', 1, 4500);
+
+-- Trying to delete a department referenced by an employee
+DELETE FROM Department WHERE DeptCode = 1;
+
+-- Trying to insert a leave record for a non-existent employee
+INSERT INTO LeaveRegister (LeaveID, EmpCode, LeaveType, FromDate, ToDate) VALUES (1, 100, 'CL', '2024-03-19', '2024-03-20');
+
+
+-- 3(a)
+CREATE TABLE EmpBasic7000 AS
+SELECT e.EmpCode, e.EmpName, d.DeptName, e.BasicSalary
+FROM Employee e
+JOIN Department d ON e.DeptCode = d.DeptCode
+WHERE d.DeptName = 'd1' AND e.BasicSalary = 7000;
+
+-- 3(b)
+INSERT INTO EmpBasic7000 (EmpCode, EmpName, DeptName, BasicSalary)
+SELECT EmpCode, EmpName, (SELECT DeptName FROM Department WHERE DeptCode = e.DeptCode), BasicSalary
+FROM Employee e
+WHERE BasicSalary >= 7000;
+
+-- 3(c)
+ALTER TABLE Employee ADD COLUMN NetPay DECIMAL(10,2);
+
+-- 3(d)
+UPDATE Employee SET NetPay = BasicSalary * 1.5;
+
+-- 3(e)
+ALTER TABLE Employee DROP COLUMN NetPay;
+
+---------------------------------------------------------------------
+
+CREATE TABLE Book (
+    BookID INT,
+    SerialNumber INT,
+    Title VARCHAR(100),
+    Author VARCHAR(100),
+    Publisher VARCHAR(100),
+    Price DECIMAL(10,2),
+    To_Be_Returned_By DATE,
+    Status VARCHAR(10),
+    PRIMARY KEY (BookID, SerialNumber)
+);
+
+CREATE TABLE Member (
+    MemberID INT PRIMARY KEY,
+    Name VARCHAR(100),
+    Email VARCHAR(100),
+    Address VARCHAR(200),
+    MemberType VARCHAR(20),
+    MaxBooksAllowed INT,
+    -- Other parameters based on member type can be added here
+);
+
+CREATE TABLE Transaction (
+    TransactionID INT PRIMARY KEY,
+    MemberID INT,
+    BookID INT,
+    SerialNumber INT,
+    TransactionType VARCHAR(10),
+    DT_Issue DATE,
+    DT_Return DATE,
+    FOREIGN KEY (MemberID) REFERENCES Member(MemberID),
+    FOREIGN KEY (BookID, SerialNumber) REFERENCES Book(BookID, SerialNumber)
+);
+
+-- Sample data for books
+INSERT INTO Book (BookID, SerialNumber, Title, Author, Publisher, Price, Status)
+VALUES
+(1, 1, 'Book1', 'Author1', 'Publisher1', 20.00, 'Available'),
+(1, 2, 'Book1', 'Author1', 'Publisher1', 20.00, 'Available'),
+(2, 1, 'Book2', 'Author2', 'Publisher2', 25.00, 'Available');
+
+-- Sample data for members
+INSERT INTO Member (MemberID, Name, Email, Address, MemberType, MaxBooksAllowed)
+VALUES
+(1, 'Student1', 'student1@example.com', 'Address1', 'Student', 3),
+(2, 'Faculty1', 'faculty1@example.com', 'Address2', 'Faculty', 5);
+
+-- Sample data for transactions
+INSERT INTO Transaction (TransactionID, MemberID, BookID, SerialNumber, TransactionType, DT_Issue)
+VALUES
+(1, 1, 1, 1, 'Issue', '2024-03-01'),
+(2, 2, 2, 1, 'Issue', '2024-03-05'),
+(3, 1, 1, 2, 'Return', '2024-03-08'),
+(4, 1, 1, 1, 'Issue', '2024-03-10');
+
+SELECT BookID, COUNT(*) AS TotalCopies,
+       SUM(CASE WHEN Status = 'Issued' THEN 1 ELSE 0 END) AS CopiesIssued
+FROM Book
+GROUP BY BookID;
+
+SELECT DISTINCT m.MemberID, m.Name
+FROM Member m
+JOIN Transaction t ON m.MemberID = t.MemberID
+JOIN Book b ON t.BookID = b.BookID AND t.SerialNumber = b.SerialNumber
+WHERE t.TransactionType = 'Issue' AND b.To_Be_Returned_By < CURRENT_DATE;
+
+SELECT t.TransactionID, t.MemberID, t.BookID, t.SerialNumber, t.DT_Issue, t.DT_Return, 
+       DATEDIFF(t.DT_Return, t.To_Be_Returned_By) AS DelayInDays
+FROM Transaction t
+JOIN Book b ON t.BookID = b.BookID AND t.SerialNumber = b.SerialNumber
+WHERE t.TransactionType = 'Return' AND t.DT_Return > t.To_Be_Returned_By;
+
+-- For students
+SELECT m.MemberID, m.Name
+FROM Member m
+LEFT JOIN Transaction t ON m.MemberID = t.MemberID
+WHERE m.MemberType = 'Student' AND t.MemberID IS NULL;
+
+-- For faculty
+SELECT m.MemberID, m.Name
+FROM Member m
+LEFT JOIN Transaction t ON m.MemberID = t.MemberID
+WHERE m.MemberType = 'Faculty' AND t.MemberID IS NULL;
+
+SELECT BookID, COUNT(*) AS IssueCount
+FROM Transaction
+WHERE TransactionType = 'Issue'
+GROUP BY BookID;
