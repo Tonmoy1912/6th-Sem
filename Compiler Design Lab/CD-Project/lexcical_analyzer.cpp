@@ -405,6 +405,28 @@ string getTokenizedExpression(){
 			throw invalid_argument("Unknown input "+it);
 		}
 	}
+    if(tokenizedInput[0]=='i'){
+        vector<int> arr;
+        int n=tokenizedInput.size();
+        int count=0;
+        bool flag=false;
+        for(int i=0;i<n;i++){
+            if(tokenizedInput[i]=='('){
+                flag=true;
+            }
+            else if(tokenizedInput[i]==')'){
+                flag=false;
+                arr.push_back(count);
+                count=0;
+            }
+            else if(flag){
+                count++;
+            }
+        }
+        if(arr.size()==2 && arr[0]!=arr[1]){
+            throw invalid_argument(" Invalid input ");
+        }
+    }
 	return tokenizedInput;
 }
 
