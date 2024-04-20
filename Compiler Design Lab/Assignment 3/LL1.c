@@ -641,23 +641,23 @@ void main(){
 
 	printLL1(table_LL1);
 
-	// while(1){
-	// 	printf("enter a word to verify \n");
-	// 	scanf("%s",text);
-	// 	if(strcmp(text,".")==0)break;
+	while(1){
+		printf("enter a word to verify \n");
+		scanf("%s",text);
+		if(strcmp(text,".")==0)break;
 
-	// 	int verify = checkIfvalid(table_LL1,text,prod_with_no_rec);
-	// 	switch (verify){
-	// 		case 1:
-	// 			printf("\033[0;32m the word %s is accepted \n",text);
-	// 			printf("\033[0;37m");
-	// 			break;
-	// 		case 0:
-	// 			printf("\033[0;31m the %s is rejected  \n",text);
-	// 			printf("\033[0;37m");
-	// 			break;
-	// 	}
-	// 	printf("\n");
-	// }
+		int verify = checkIfvalid(table_LL1,text,prod_with_no_rec);
+		switch (verify){
+			case 1:
+				printf("\033[0;32m the word %s is accepted \n",text);
+				printf("\033[0;37m");
+				break;
+			case 0:
+				printf("\033[0;31m the %s is rejected  \n",text);
+				printf("\033[0;37m");
+				break;
+		}
+		printf("\n");
+	}
 
 }
