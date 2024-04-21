@@ -1,0 +1,44 @@
+-- 1
+-- Trigger to handle inserts and updates on RESULT table
+CREATE OR REPLACE TRIGGER result_trigger
+AFTER INSERT OR UPDATE ON RESULT
+FOR EACH ROW
+BEGIN
+    -- Check if the marks are 50 or more
+    IF :NEW.MARKS >= 50 THEN
+        -- Delete corresponding row from BACKPAPER if present
+        DELETE FROM BACKPAPER
+        WHERE ROLL = :NEW.ROLL
+        AND SCODE = :NEW.SCODE;
+    ELSE
+        -- Insert a row into BACKPAPER if not already present
+        BEGIN
+            INSERT INTO BACKPAPER (ROLL, SCODE)
+            VALUES (:NEW.ROLL, :NEW.SCODE);
+        EXCEPTION
+            WHEN DUP_VAL_ON_INDEX THEN
+                NULL; -- Ignore duplicate entry error
+        END;
+    END IF;
+END;
+/
+
+-- 2
+-- Trigger to log deleted rows from REQUEST table into SERVICE_LOG
+CREATE OR REPLACE TRIGGER request_delete_trigger
+AFTER DELETE ON REQUEST
+FOR EACH ROW
+DECLARE
+    v_entry_no NUMBER;
+BEGIN
+    -- Generate ENTRY_NO by incrementing the last value
+    SELECT COUNT(*) INTO v_entry_no FROM SERVICE_LOG;
+    v_entry_no:=v_entry_no+1;
+    -- Insert log entry into SERVICE_LOG
+    INSERT INTO SERVICE_LOG (ENTRY_NO, REQ_NO, SERVICE_DT)
+    VALUES (v_entry_no, :OLD.REQ_NO, SYSDATE);
+    
+    -- Commit the transaction
+    COMMIT;
+END;
+/

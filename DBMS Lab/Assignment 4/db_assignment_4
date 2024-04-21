@@ -1,0 +1,283 @@
+-- 1
+DECLARE
+    v_employee_code EMP.employee_code%TYPE;
+    v_employee_name EMP.employee_name%TYPE;
+BEGIN
+    -- Accepting employee code from user
+    v_employee_code := &employee_code; -- Assuming you'll provide the employee code when prompted
+
+    -- Querying EMP table to find the name of the employee
+    SELECT employee_name INTO v_employee_name
+    FROM EMP
+    WHERE employee_code = v_employee_code;
+
+    -- Displaying the employee name if found
+    DBMS_OUTPUT.PUT_LINE('Employee name: ' || v_employee_name);
+
+EXCEPTION
+    -- Handling case when employee is not found
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Employee with code ' || v_employee_code || ' does not exist.');
+END;
+/
+
+
+-- 2
+DECLARE
+    v_employee_code EMP.employee_code%TYPE := &employee_code; -- Assuming you'll provide the employee code when prompted
+    v_employee_name EMP.employee_name%TYPE := '&employee_name'; -- Assuming you'll provide the employee name when prompted
+    v_department_code EMP.department_code%TYPE := &department_code; -- Assuming you'll provide the department code when prompted
+BEGIN
+    -- Check if employee code is duplicate
+    SELECT COUNT(*)
+    INTO   v_duplicate_count
+    FROM   EMP
+    WHERE  employee_code = v_employee_code;
+
+    IF v_duplicate_count > 0 THEN
+        DBMS_OUTPUT.PUT_LINE('Employee code ' || v_employee_code || ' already exists. Cannot add duplicate employee.');
+    ELSE
+        -- Check if department code exists in DEPT table
+        SELECT COUNT(*)
+        INTO   v_department_count
+        FROM   DEPT
+        WHERE  department_code = v_department_code;
+
+        IF v_department_count = 0 THEN
+            DBMS_OUTPUT.PUT_LINE('Department code ' || v_department_code || ' does not exist in DEPT table. Cannot add employee.');
+        ELSE
+            -- Add row to EMP table
+            INSERT INTO EMP (employee_code, employee_name, department_code)
+            VALUES (v_employee_code, v_employee_name, v_department_code);
+
+            DBMS_OUTPUT.PUT_LINE('Employee added successfully.');
+        END IF;
+    END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('An error occurred: ' || SQLERRM);
+END;
+/
+
+
+-- 3
+DECLARE
+    CURSOR top_employees_cur IS
+        SELECT employee_name
+        FROM EMP
+        ORDER BY basic_salary DESC
+        FETCH FIRST 5 ROWS ONLY;
+    v_employee_name EMP.employee_name%TYPE;
+    v_rank NUMBER := 1;
+BEGIN
+    -- Loop through the cursor to fetch top 5 employees
+    FOR emp_rec IN top_employees_cur LOOP
+        DBMS_OUTPUT.PUT_LINE('Rank ' || v_rank || ': ' || emp_rec.employee_name);
+        v_rank := v_rank + 1;
+    END LOOP;
+END;
+/
+
+
+-- 4
+DECLARE
+    v_department_code EMP.department_code%TYPE := &department_code; -- Assuming you'll provide the department code when prompted
+    v_deleted_rows NUMBER := 0;
+BEGIN
+    -- Delete all employee rows with the provided department code
+    DELETE FROM EMP
+    WHERE department_code = v_department_code;
+
+    -- Get the count of deleted rows
+    v_deleted_rows := SQL%ROWCOUNT;
+
+    -- Show how many rows have been deleted
+    DBMS_OUTPUT.PUT_LINE(v_deleted_rows || ' rows deleted for department code ' || v_department_code);
+END;
+/
+
+-- 5
+-- PL/SQL block for book issue
+CREATE OR REPLACE PROCEDURE IssueBook(
+    p_member_id IN NUMBER,
+    p_book_id IN NUMBER,
+    p_serial_number IN NUMBER
+) IS
+DECLARE
+    v_issue_date DATE := SYSDATE;
+    v_return_date DATE := SYSDATE + 7; -- Return date set to 7 days from issue date
+BEGIN
+    -- Check if member exists and is eligible to issue books
+    SELECT COUNT(*) INTO v_member_count
+    FROM Members
+    WHERE member_id = p_member_id AND ROWNUM = 1; -- Only need to check if the member exists
+    
+    IF v_member_count = 0 THEN
+        DBMS_OUTPUT.PUT_LINE('Member does not exist.');
+        RETURN;
+    END IF;
+    
+    -- Check if the member has reached maximum books allowed
+    SELECT COUNT(*) INTO v_books_count
+    FROM Transactions
+    WHERE member_id = p_member_id AND return_date IS NULL;
+    
+    SELECT max_books_allowed INTO v_max_books_allowed
+    FROM Members
+    WHERE member_id = p_member_id;
+    
+    IF v_books_count >= v_max_books_allowed THEN
+        DBMS_OUTPUT.PUT_LINE('Maximum books limit reached for the member.');
+        RETURN;
+    END IF;
+    
+    -- Check if the book is available
+    SELECT COUNT(*) INTO v_book_count
+    FROM Books
+    WHERE book_id = p_book_id AND serial_number = p_serial_number AND status = 'available';
+    
+    IF v_book_count = 0 THEN
+        DBMS_OUTPUT.PUT_LINE('Book is not available.');
+        RETURN;
+    END IF;
+    
+    -- Update book status to 'issued' and set To_Be_Returned_By date
+    UPDATE Books
+    SET status = 'issued', To_Be_Returned_By = v_return_date
+    WHERE book_id = p_book_id AND serial_number = p_serial_number;
+    
+    -- Insert transaction record
+    INSERT INTO Transactions (transaction_id, member_id, book_id, serial_number, transaction_date)
+    VALUES (transaction_seq.NEXTVAL, p_member_id, p_book_id, p_serial_number, v_issue_date);
+    
+    DBMS_OUTPUT.PUT_LINE('Book issued successfully.');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('An error occurred: ' || SQLERRM);
+END
+/
+
+-- PL/SQL block for book return
+CREATE OR REPLACE PROCEDURE ReturnBook(
+    p_member_id IN NUMBER,
+    p_book_id IN NUMBER,
+    p_serial_number IN NUMBER
+) IS
+DECLARE
+    v_return_date DATE := SYSDATE;
+BEGIN
+    -- Check if the book copy was issued to this member
+    SELECT COUNT(*) INTO v_transaction_count
+    FROM Transactions
+    WHERE member_id = p_member_id AND book_id = p_book_id 
+        AND serial_number = p_serial_number AND return_date IS NULL;
+    
+    IF v_transaction_count = 0 THEN
+        DBMS_OUTPUT.PUT_LINE('This copy was not issued to this member.');
+        RETURN;
+    END IF;
+    
+    -- Update book status to 'available' 
+    UPDATE Books
+    SET status = 'available'
+    WHERE book_id = p_book_id AND serial_number = p_serial_number;
+    
+    -- Update transaction with return date
+    UPDATE Transactions
+    SET return_date = v_return_date
+    WHERE member_id = p_member_id AND book_id = p_book_id 
+        AND serial_number = p_serial_number AND return_date IS NULL;
+    
+    DBMS_OUTPUT.PUT_LINE('Book returned successfully.');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('An error occurred: ' || SQLERRM);
+END
+/
+
+-- 6
+DECLARE
+    v_month NUMBER;
+    v_year NUMBER;
+    v_no_of_days_in_month NUMBER;
+BEGIN
+    -- Get current month and year
+    SELECT EXTRACT(MONTH FROM SYSDATE), EXTRACT(YEAR FROM SYSDATE)
+    INTO v_month, v_year
+    FROM dual;
+    
+    -- Get number of days in the current month
+    SELECT EXTRACT(DAY FROM LAST_DAY(TO_DATE('01-' || v_month || '-' || v_year, 'DD-MM-YYYY')))
+    INTO v_no_of_days_in_month
+    FROM dual;
+    
+    -- Calculate effective basic salary for each employee
+    FOR emp_rec IN (SELECT DISTINCT emp_no FROM LEAVE WHERE EXTRACT(MONTH FROM leave_date) = v_month) LOOP
+        DECLARE
+            v_basic_salary NUMBER;
+            v_total_leave_days NUMBER := 0;
+            v_effective_basic NUMBER;
+        BEGIN
+            -- Get BASIC salary for the employee
+            SELECT BASIC INTO v_basic_salary
+            FROM EMP
+            WHERE emp_no = emp_rec.emp_no;
+            
+            -- Get total leave days for the employee in the current month
+            SELECT SUM(no_of_days)
+            INTO v_total_leave_days
+            FROM LEAVE
+            WHERE emp_no = emp_rec.emp_no AND EXTRACT(MONTH FROM leave_date) = v_month;
+            
+            -- Calculate effective basic salary using the formula
+            v_effective_basic := v_basic_salary - (v_basic_salary * v_total_leave_days) / v_no_of_days_in_month;
+            
+            -- Display the result
+            DBMS_OUTPUT.PUT_LINE('Employee ' || emp_rec.emp_no || ' Effective Basic for ' || TO_CHAR(v_month, 'FM00') || '-' || v_year || ': ' || v_effective_basic);
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                DBMS_OUTPUT.PUT_LINE('Employee ' || emp_rec.emp_no || ' has no leave records for ' || TO_CHAR(v_month, 'FM00') || '-' || v_year);
+        END;
+    END LOOP;
+END;
+/
+
+
+-- 7
+DECLARE
+    v_start_date DATE := TO_DATE('&start_date', 'YYYY-MM-DD'); -- Assuming you'll provide the start date in 'YYYY-MM-DD' format
+    v_end_date DATE := TO_DATE('&end_date', 'YYYY-MM-DD'); -- Assuming you'll provide the end date in 'YYYY-MM-DD' format
+BEGIN
+    FOR order_rec IN (
+        SELECT DISTINCT om.ORDER_NO, om.ORDER_DT
+        FROM ORDERMAST om
+        WHERE om.ORDER_DT BETWEEN v_start_date AND v_end_date
+    ) LOOP
+        -- Display order information
+        DBMS_OUTPUT.PUT_LINE('Order Number: ' || order_rec.ORDER_NO);
+        DBMS_OUTPUT.PUT_LINE('Order Date: ' || TO_CHAR(order_rec.ORDER_DT, 'YYYY-MM-DD'));
+        
+        -- Fetch pending delivery information
+        FOR delivery_rec IN (
+            SELECT dd.DELV_NO, dd.ITEM_NO, dd.QTY
+            FROM DELIVERY_DETAILS dd
+            INNER JOIN DELIVERYMAST dm ON dd.DELV_NO = dm.DELV_NO
+            WHERE dm.ORDER_NO = order_rec.ORDER_NO
+            AND dm.DELV_DT IS NULL -- Check for pending deliveries
+        ) LOOP
+            -- Display pending delivery details
+            DBMS_OUTPUT.PUT_LINE('Pending Delivery Number: ' || delivery_rec.DELV_NO);
+            DBMS_OUTPUT.PUT_LINE('Item Number: ' || delivery_rec.ITEM_NO);
+            DBMS_OUTPUT.PUT_LINE('Quantity: ' || delivery_rec.QTY);
+            DBMS_OUTPUT.PUT_LINE('------------------------');
+        END LOOP;
+        
+        DBMS_OUTPUT.PUT_LINE('');
+    END LOOP;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('No pending deliveries found for the specified period.');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('An error occurred: ' || SQLERRM);
+END;
+/
