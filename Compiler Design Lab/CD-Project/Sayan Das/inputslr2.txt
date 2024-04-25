@@ -1,0 +1,23 @@
+E->S;|I;|D;
+S->sAfa(S')
+S'-># | O | GS''' | WS''
+S'' -> O | # | GS'''
+S''' -> # | O
+A-> aA' | *
+A'->#|,A
+W->wC
+C->cYC'|aYC'|!C
+C'->a | c
+X->&|^
+Y->=|>|<
+G->gbM
+O->obN
+D->dfaW
+I->ieaI'
+I'->vV|LvV
+L->(M)
+M->aM'
+M'-># | ,M
+V->(N)
+N->cN'
+N'->#|,N

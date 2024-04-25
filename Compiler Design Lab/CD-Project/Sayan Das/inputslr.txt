@@ -9,9 +9,8 @@ S->sAfaGO
 S->sAfaWGO
 A->a|*|a,A
 W->wC
-C->CXC|!C|(C)
+C->cYa|aYc|aYa|cYc|!C
 X->&|^
-C->cYa|aYc|aYa|cYc
 Y->=|>|<
 G->gbM
 O->obN

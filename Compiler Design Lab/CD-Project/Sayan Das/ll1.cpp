@@ -2,6 +2,8 @@
 using namespace std;
 
 set<char> ss;
+set<char> ter;
+vector<vector<string>> entity(25,vector<string>(23));
 bool dfs(char i, char org, char last, map<char,vector<vector<char>>> &mp){
     bool rtake = false;
     for(auto r : mp[i]){
@@ -9,11 +11,12 @@ bool dfs(char i, char org, char last, map<char,vector<vector<char>>> &mp){
         for(auto s : r){
             if(s == i) break;
             if(!take) break;
-            if(!(s>='A'&&s<='Z')&&s!='e'){
+            if(!(s>='A'&&s<='Z')&&s!='#'){
                 ss.insert(s);
+                ter.insert(s);
                 break;
             }
-            else if(s == 'e'){
+            else if(s == '#'){
                 if(org == i||i == last)
                 ss.insert(s);
                 rtake = true;
@@ -32,7 +35,8 @@ bool dfs(char i, char org, char last, map<char,vector<vector<char>>> &mp){
 
 int main(){
     int i,j;
-    ifstream fin("inputslr.txt");
+    ifstream fin("finalGrammar.txt");
+    ofstream fout("parsingTable.txt");
     string num;
     vector<int> fs;
     vector<vector<int>> a;
@@ -74,7 +78,7 @@ int main(){
                     temp.push_back(r[i]);
                 temp.push_back(c);
                 add[c].push_back(temp);
-                add[c].push_back({'e'});
+                add[c].push_back({'#'});
             }
         }
         if(one){
@@ -142,14 +146,14 @@ int main(){
             for(auto r : q.second){
                 for(i=0;i<r.size()-1;i++){
                     if(r[i]>='A'&&r[i]<='Z'){
-                        if(!(r[i+1]>='A'&&r[i+1]<='Z')) gmp[r[i]].insert(r[i+1]);
+                        if(!(r[i+1]>='A'&&r[i+1]<='Z')) {gmp[r[i]].insert(r[i+1]);ter.insert(r[i+1]);}
                         else {
                             char temp = r[i+1];
                             int j = i+1;
                             while(temp>='A'&&temp<='Z'){
-                                if(*fmp[temp].begin()=='e'){
+                                if(find(fmp[temp].begin(),fmp[temp].end(),'#')!=fmp[temp].end()){
                                     for(auto g : fmp[temp]){
-                                        if(g=='e') continue;
+                                        if(g=='#') continue;
                                         gmp[r[i]].insert(g);
                                     }
                                     j++;
@@ -176,7 +180,7 @@ int main(){
                     }
                 }
                 if(r[r.size()-1]>='A'&&r[r.size()-1]<='Z'){
-                    for(auto g : gmp[q.first]) gmp[r[i]].insert(g);
+                    for(auto g : gmp[q.first]) gmp[r[r.size()-1]].insert(g);
                 }
             }
         }
@@ -196,6 +200,63 @@ int main(){
         ans+="}";
         cout<<ans<<'\n';
     }
+    cout<<"   ------------------------ Printing the Parsing Table-------------------------------------\n";
+    vector<char> terminal(ter.begin(),ter.end());
+    terminal.push_back('$');
+    fout<<"             ";
+    for(auto i: terminal){
+        fout<<"      "<<i<<"      ";
+    }
+    fout<<endl;
 
+  int z=0;
+  char w='A';
+  while(z<25){
+    if(w=='Z') {w++;continue;}
+    entity[z][0]+=w;
+    w++,z++;
+  }
+
+for(auto q : fmp){
+        char index1 = q.first;
+        int index2;
+        index2=index1-'A';
+        for(char r : q.second){
+            int ind;
+            if(r!='#'){
+                ind=find(terminal.begin(),terminal.end(),r)-terminal.begin();
+            
+            string siu;
+            siu+=index1;
+            siu+="->";
+            for(auto bo:mp[index1][0]) siu.push_back(bo);
+            entity[index2][ind+1]=siu;
+            }
+            else{
+                 for(auto q : gmp){
+            char index1= q.first;
+            int index2;
+            index2=index1-'A';
+            for(char r : q.second){
+                int ind=find(terminal.begin(),terminal.end(),r)-terminal.begin();
+                 string siu;
+            siu+=index1;
+            siu+="->";
+            for(auto bo:mp[index1][0]) siu.push_back(bo);
+            entity[index2][ind+1]=siu;
+
+            }
+    }
+            }
+        }
+    }
+    for(int i=0;i<25;i++){
+            for(int j=0;j<23;j++){
+            if(j==0) fout<<"      "<<entity[i][j]<<"      ";
+            else  fout<<" "<<entity[i][j]<<" ";
+        }
+        fout<<endl;
+    }
+  
     return 0;
 }
