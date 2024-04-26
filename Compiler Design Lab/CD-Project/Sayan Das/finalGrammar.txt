@@ -12,7 +12,7 @@ X->&|^
 P->a|c
 Y->=|>|<
 G->gbM
-O->obN
+O->obM
 D->dfaW
 I->ieaQ
 Q->vV|LvV

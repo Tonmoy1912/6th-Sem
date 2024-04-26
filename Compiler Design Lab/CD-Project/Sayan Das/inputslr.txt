@@ -13,7 +13,7 @@ C->cYa|aYc|aYa|cYc|!C
 X->&|^
 Y->=|>|<
 G->gbM
-O->obN
+O->obM
 D->dfaW
 I->ieaLvV
 I->ieavV

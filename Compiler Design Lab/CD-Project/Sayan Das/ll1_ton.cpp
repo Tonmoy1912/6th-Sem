@@ -684,7 +684,7 @@ int main(){
     //..............................parsing the input..............................
 
     string token=getTokenizedExpression();
-    // cout<<token<<endl;
+    cout<<token<<endl;
     
     queue<char> q;
     for(auto it:token){
