@@ -9,7 +9,6 @@ W->wC
 C->cYU|aYU|!C
 U->a|c
 X->&|^
-P->a|c
 Y->=|>|<
 G->gbM
 O->obM
