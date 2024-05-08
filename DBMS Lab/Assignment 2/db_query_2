@@ -1,0 +1,64 @@
+1/
+select dept_code, min(basic), max(basic), avg(basic) from emp_1133 group by dept_code;
+
+2/
+select dept_code, count(sex) from emp_1133 where sex='MALE' group by dept_code ;
+
+4/
+SELECT COUNT(emp_code), DESIG_CODE FROM EMP_1133 WHERE JN_DATE>'31-DEC-1999' and JN_DATE<'1-JAN-2001' GROUP BY DESIG_CODE ORDER BY COUNT(DESIG_CODE);
+
+3/
+select dept_code, city, count(emp_code) from emp_1133 group by dept_code, city;
+
+5/
+select dept_code, sum(basic) from emp_1133 where sex='MALE' group by dept_code  having sum(basic)>5000 order by sum(basic) desc;
+
+6/
+select emp_1133.emp_name, designation_1133.desig_desc, emp_1133.basic from emp_1133 join designation_1133 on emp_1133.desig_code=designation_1133.desig_code;
+
+7/
+select emp_1133.emp_name, designation_1133.desig_desc, department_1133.dept_desc, emp_1133.basic from emp_1133 join designation_1133 on emp_1133.desig_code=designation_1133.desig_code join department_1133 on emp_1133.dept_code=department_1133.dept_code;
+
+8/
+select department_1133.dept_code,department_1133.dept_desc from department_1133 left join emp_1133 on department_1133.dept_code=emp_1133.dept_code group by department_1133.dept_code,department_1133.dept_desc having count(emp_1133.emp_code)=0;
+
+9/
+select department_1133.dept_code,department_1133.dept_desc from department_1133 left join emp_1133 on department_1133.dept_code=emp_1133.dept_code group by department_1133.dept_code,department_1133.dept_desc having count(emp_1133.emp_code)>0;
+
+10/
+select department_1133.dept_code,department_1133.dept_desc from department_1133 left join emp_1133 on department_1133.dept_code=emp_1133.dept_code group by department_1133.dept_code,department_1133.dept_desc having count(emp_1133.emp_code)>9;
+
+11/
+select department_1133.dept_code from department_1133 join emp_1133 on department_1133.dept_code=emp_1133.dept_code where emp_1133.basic=(select max(basic) from emp_1133);
+
+12/
+select designation_1133.desig_desc,designation_1133.desig_code from designation_1133 join emp_1133 on designation_1133.desig_code=emp_1133.desig_code where emp_1133.basic=(select max(basic) from emp_1133);
+
+13/
+ 
+14/
+select basic from emp_1133 where basic not in ( select a.basic from emp_1133 a join emp_1133 b on a.basic<b.basic );
+
+15/
+select basic from emp_1133 where basic not in ( select a.basic from emp_1133 a , emp_1133 b where a.basic>b.basic );
+
+16/
+select dept_desc,sum(basic) from department_1133 join emp_1133 on department_1133.dept_code=emp_1133.dept_code group by dept_desc having sum(basic)=(select max(sum(basic)) from department_1133 join emp_1133 on department_1133.dept_code=emp_1133.dept_code group by dept_desc);
+
+select dept_desc,avg(basic) from department_1133 join emp_1133 on department_1133.dept_code=emp_1133.dept_code group by dept_desc having avg(basic)=(select max(avg(basic)) from department_1133 join emp_1133 on department_1133.dept_code=emp_1133.dept_code group by dept_desc);
+
+select dept_desc,count(emp_code) from department_1133 join emp_1133 on department_1133.dept_code=emp_1133.dept_code group by dept_desc having count(emp_code)=(select max(count(emp_code)) from department_1133 join emp_1133 on department_1133.dept_code=emp_1133.dept_code group by dept_desc);
+
+17/
+INSERT INTO EMP_1133 VALUES ('10','TONMOY BISWAS 10','1','10','MALE','KOLKATA','KOLKATA','WEST BENGAL','700032','1000',TO_DATE('2021-12-19', 'yyyy/mm/dd'));
+INSERT INTO EMP_1133 VALUES ('11','TONMOY BISWAS 11','1','10','MALE','KOLKATA','KOLKATA','WEST BENGAL','700032','1000',TO_DATE('2021-12-19', 'yyyy/mm/dd'));
+INSERT INTO EMP_1133 VALUES ('12','TONMOY BISWAS 12','1','10','MALE','KOLKATA','KOLKATA','WEST BENGAL','700032','1000',TO_DATE('2021-12-19', 'yyyy/mm/dd'));
+
+INSERT INTO EMP_1133 VALUES ('13','NEW_MEMBER 12','1','1','FEMALE','KOLKATA','KOLKATA','WEST BENGAL','700032','9000',TO_DATE('2021-12-19', 'yyyy/mm/dd'));
+
+18/
+delete from emp_1133 where desig_code not in ( select desig_code from designation_1133);
+
+19/
+select emp_name from emp_1133 where sex='FEMALE' and basic>(select avg(basic) from emp_1133 e where e.dept_code=dept_code);
+
